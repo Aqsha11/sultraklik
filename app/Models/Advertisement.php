@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Advertisement extends Model
 {
@@ -39,7 +40,7 @@ class Advertisement extends Model
             return null;
         }
 
-        return str_starts_with($this->image, ['http://', 'https://'])
+        return Str::startsWith($this->image, ['http://', 'https://'])
             ? $this->image
             : asset('storage/'.$this->image);
     }

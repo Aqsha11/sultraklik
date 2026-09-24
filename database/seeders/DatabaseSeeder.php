@@ -15,7 +15,9 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             RegionSeeder::class,
             ArticleSeeder::class,
+            ArticleBulkSeeder::class,
             PageSeeder::class,
+            AdvertisementSeeder::class,
         ]);
 
         $this->seedSettings();

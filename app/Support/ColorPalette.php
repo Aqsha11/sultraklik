@@ -21,7 +21,7 @@ class ColorPalette
         $black = [0, 0, 0];
 
         return [
-            50  => self::blend($r, $g, $b, 255, 255, 255, 0.90),
+            50 => self::blend($r, $g, $b, 255, 255, 255, 0.90),
             100 => self::blend($r, $g, $b, 255, 255, 255, 0.80),
             200 => self::blend($r, $g, $b, 255, 255, 255, 0.65),
             300 => self::blend($r, $g, $b, 255, 255, 255, 0.48),

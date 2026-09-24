@@ -94,6 +94,17 @@ class ArticleSeeder extends Seeder
             now()->subDays(2),
             false
         );
+
+        Article::published()
+            ->where('is_headline', false)
+            ->where('is_featured', false)
+            ->orderByDesc('views')
+            ->limit(4)
+            ->get()
+            ->each(function (Article $article) {
+                $article->is_featured = true;
+                $article->save();
+            });
     }
 
     private function seedOne(
@@ -127,15 +138,17 @@ class ArticleSeeder extends Seeder
                 'title' => $title,
                 'excerpt' => $excerpt,
                 'content' => implode("\n", $content),
+                'featured_image' => 'https://placehold.co/800x450/'.dechex(crc32($title) % 0xFFFFFF).'/ffffff?text='.str_replace('%', '', rawurlencode(Str::slug($title))),
                 'category_id' => $category->id,
                 'region_id' => $region?->id,
                 'author_id' => $user->id,
                 'status' => Article::STATUS_PUBLISHED,
                 'published_at' => $publishedAt,
                 'is_headline' => false,
-                'is_featured' => $isFeatured,
+                'is_featured' => false,
                 'views' => $views,
                 'comments_count' => random_int(0, 20),
+                'likes_count' => random_int(0, 250),
                 'seo_title' => $title,
                 'seo_description' => $excerpt,
             ])

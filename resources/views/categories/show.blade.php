@@ -22,16 +22,19 @@
         @endif
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 space-y-4">
-                @forelse($articles as $article)
-                    <x-news-card :article="$article" textSize="text-lg" excerpt="true" />
-                @empty
-                    <div class="bg-white p-10 text-center text-gray-500 rounded-lg">Belum ada berita.</div>
-                @endforelse
+            <div class="lg:col-span-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @forelse($articles as $article)
+                        <x-news-card :article="$article" textSize="text-lg" excerpt="true" />
+                    @empty
+                        <div class="bg-white md:col-span-2 p-10 text-center text-gray-500 rounded-lg">Belum ada berita.</div>
+                    @endforelse
+                </div>
             </div>
 
             <aside class="space-y-6">
                 <x-widget-popular title="TERPOPULER" :articles="\App\Models\Article::published()->orderByDesc('views')->limit(5)->get()" />
+                <x-sidebar-ads position="sidebar" />
             </aside>
         </div>
 

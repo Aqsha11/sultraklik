@@ -14,7 +14,6 @@
                     </a>
                     <div class="p-5">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="bg-red-600 text-white text-[11px] font-bold px-2 py-0.5 rounded uppercase">Headline</span>
                             @if($headlineMain->article->region)
                                 <a href="{{ url('/sultra/'.$headlineMain->article->region->slug) }}" class="text-xs font-bold text-red-600 uppercase">{{ $headlineMain->article->region->name }}</a>
                             @else
@@ -25,81 +24,149 @@
                             <h1 class="font-serif-news font-black text-2xl md:text-3xl lg:text-4xl leading-tight group-hover:text-red-700 transition-colors">{{ $headlineMain->article->title }}</h1>
                         </a>
                         <p class="text-sm text-gray-500 mt-3">{{ $headlineMain->article->published_at->diffForHumans() }} &bull; {{ $headlineMain->article->views }} views</p>
+                        <x-card-actions :article="$headlineMain->article" />
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 lg:grid-cols-1 gap-4">
+                <div class="flex flex-col gap-4 lg:h-full lg:overflow-y-auto lg:pr-1">
                     @foreach($headlineOthers as $article)
-                        <x-news-card-vertical :article="$article" showCategory="true" textSize="text-sm text-base" />
+                        <x-news-card :article="$article" showImage="true" textSize="text-sm" />
                     @endforeach
                 </div>
             </div>
         @endif
 
-        {{-- BERITA TERBARU + TERPOPULER --}}
+        <div class="mb-10">
+            <x-ad-slot position="homepage_top" height="h-16" imgHeight="h-16" />
+        </div>
+
+        {{-- BERITA TERBARU + TRENDING + KATEGORI + SIDEBAR --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="bg-gray-900 text-white px-3 py-2 font-bold text-sm tracking-wider uppercase rounded">Berita Terbaru</h2>
-                    <button type="button" class="flex items-center gap-1.5 text-red-600 text-2xl font-black" x-data="{ live: false }" @click="live = !live">
-                        <svg x-show="live" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 4v5h.582M20 20v-5h-.581M4.582 9A9 9 0 0119.419 4.57M20 15a9 9 0 01-14.83 5.43"/></svg>
-                        <svg x-show="!live" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
-                    </button>
+            <div class="lg:col-span-2 space-y-12">
+                <div x-data="homeLoadMore('latest', @json($pageUsedIds))">
+                    <div class="flex items-center justify-between mb-5 border-b-2 border-gray-200">
+                        <h2 class="relative pb-2 font-black text-base md:text-lg tracking-widest uppercase text-gray-900">
+                            <span class="absolute bottom-[-2px] left-0 h-[3px] w-14 bg-red-600"></span>
+                            Berita Terbaru
+                        </h2>
+                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-500 hover:text-white hover:bg-red-600 hover:border-red-600 transition-colors" x-data="{ live: false }" @click="live = !live" title="Segarkan" aria-label="Segarkan">
+                            <i x-show="live" class="fa-solid fa-rotate animate-spin"></i>
+                            <i x-show="!live" class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-ref="grid">
+                        @forelse($latest as $article)
+                            <x-news-card :article="$article" showImage="true" textSize="text-lg" />
+                        @empty
+                            <div class="bg-white md:col-span-2 p-8 text-center text-gray-500">Belum ada berita terbaru.</div>
+                        @endforelse
+                    </div>
+                    @if($latest->count())
+                        <button type="button" x-show="hasMore" @click="load()" :disabled="loading" title="Muat Lebih Banyak" aria-label="Muat Lebih Banyak"
+                            class="mt-6 w-full flex items-center justify-center">
+                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border-2 border-gray-300 bg-white text-gray-500 hover:text-red-600 hover:border-red-600 transition-colors disabled:opacity-60">
+                                <i x-show="!loading" class="fa-solid fa-chevron-down"></i>
+                                <i x-show="loading" class="fa-solid fa-spinner fa-spin"></i>
+                            </span>
+                        </button>
+                    @endif
                 </div>
-                <div class="space-y-4">
-                    @forelse($latest as $article)
-                        <x-news-card :article="$article" showImage="true" textSize="text-lg" />
-                    @empty
-                        <div class="bg-white p-8 text-center text-gray-500">Belum ada berita terbaru.</div>
-                    @endforelse
-                </div>
+
+                {{-- TRENDING --}}
+                @if($popular->count())
+                    <div>
+                        <x-section-heading title="TRENDING" />
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            @foreach($popular->take(3) as $i => $article)
+                                <x-news-card-link :article="$article">
+                                    <article class="relative overflow-hidden">
+                                        @if($article->featured_image_url)
+                                            <img src="{{ $article->featured_image_url }}" alt="{{ $article->title }}" loading="lazy" class="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-105">
+                                        @else
+                                            <div class="w-full aspect-[4/3] bg-gray-800 flex items-center justify-center text-gray-500 font-black text-lg">SULTRAKLIK</div>
+                                        @endif
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
+                                            <span class="text-white font-black text-xl leading-none mb-1">{{ '#'.($i + 1) }}</span>
+                                            <h5 class="text-white font-bold text-sm leading-snug line-clamp-2 transition-colors group-hover:text-red-400">{{ $article->title }}</h5>
+                                            <p class="text-xs text-gray-300 mt-1.5">{{ $article->region?->name ?? $article->category?->name }} &bull; <i class="fa-solid fa-fire text-red-400"></i> {{ number_format($article->views) }} dibaca</p>
+                                        </div>
+                                    </article>
+                                </x-news-card-link>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- PILIHAN SULTRAKLIK --}}
+                @if($picked->count())
+                    <div x-data>
+                        <x-section-heading title="Pilihan Sultra Klik" />
+                        <div class="relative group/scroll">
+                            <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth" x-ref="pickedTrack">
+                                @foreach($picked as $i => $article)
+                                    <x-news-card-link :article="$article">
+                                        <article class="relative overflow-hidden min-w-[260px] md:min-w-[300px] flex-shrink-0 snap-start group">
+                                            @if($article->featured_image_url)
+                                                <img src="{{ $article->featured_image_url }}" alt="{{ $article->title }}" loading="lazy" class="w-full aspect-[4/3] object-cover transition-transform duration-300 group-hover:scale-105">
+                                            @else
+                                                <div class="w-full aspect-[4/3] bg-gray-800 flex items-center justify-center text-gray-500 font-black text-lg">SULTRAKLIK</div>
+                                            @endif
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
+                                                <h5 class="text-white font-bold text-sm leading-snug line-clamp-2 transition-colors group-hover:text-red-400">{{ $article->title }}</h5>
+                                                <p class="text-xs text-gray-300 mt-1.5">{{ $article->region?->name ?? $article->category?->name }} &bull; {{ $article->published_at->diffForHumans() }}</p>
+                                            </div>
+                                        </article>
+                                    </x-news-card-link>
+                                @endforeach
+                            </div>
+
+                            <button type="button" @click="$refs.pickedTrack.scrollBy({ left: -320, behavior: 'smooth' })"
+                                class="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-red-600 hover:text-white transition-colors -ml-4 border border-gray-100">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button type="button" @click="$refs.pickedTrack.scrollBy({ left: 320, behavior: 'smooth' })"
+                                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-red-600 hover:text-white transition-colors -mr-4 border border-gray-100">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- REKOMENDASI UNTUK ANDA --}}
+                @if($recommended->count())
+                    <div x-data="homeLoadMore('recommend', @json($pageUsedIds))">
+                        <x-section-heading title="Rekomendasi Untuk Anda" />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-ref="grid">
+                            @foreach($recommended as $article)
+                                <x-news-card :article="$article" textSize="text-lg" />
+                            @endforeach
+                        </div>
+                        <button type="button" x-show="hasMore" @click="load()" :disabled="loading" title="Muat Lebih Banyak" aria-label="Muat Lebih Banyak"
+                            class="mt-6 w-full flex items-center justify-center">
+                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border-2 border-gray-300 bg-white text-gray-500 hover:text-red-600 hover:border-red-600 transition-colors disabled:opacity-60">
+                                <i x-show="!loading" class="fa-solid fa-chevron-down"></i>
+                                <i x-show="loading" class="fa-solid fa-spinner fa-spin"></i>
+                            </span>
+                        </button>
+                    </div>
+                @endif
+
+                {{-- WILAYAH SULTRA --}}
+                @if($wilayahArticles->count())
+                    <div>
+                        <x-section-heading title="Wilayah Sultra" />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @foreach($wilayahArticles as $article)
+                                <x-news-card :article="$article" textSize="text-lg" />
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <aside class="space-y-6">
-                <x-widget-popular :articles="$popular" />
-                <div class="bg-white border border-gray-200 rounded-lg p-4">
-                    <x-section-heading title="BERITA WILAYAH" />
-                    <ul class="grid grid-cols-2 gap-2">
-                        @foreach($regions as $region)
-                            <li>
-                                <a href="{{ url('/sultra/'.$region->slug) }}" class="flex justify-between items-center px-3 py-2 text-sm font-semibold bg-gray-50 hover:bg-red-50 hover:text-red-700 rounded transition-colors">
-                                    {{ $region->name }}
-                                    <span class="text-xs text-gray-400">{{ $region->articles_count }}</span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
+                <x-sidebar-ads position="sidebar" />
             </aside>
-        </div>
-
-        {{-- Section per kategori --}}
-        @foreach($sections as $slug => $articles)
-            @if($articles->count())
-                <div class="mt-12">
-                    <x-section-heading title="{{ strtoupper(\App\Models\Category::where('slug', $slug)->value('name') ?? $slug) }}" url="{{ url('/kategori/'.$slug) }}" />
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        @foreach($articles as $article)
-                            <x-news-card-vertical :article="$article" textSize="text-sm" />
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-        @endforeach
-
-        {{-- SULTRA regions strip --}}
-        <div class="mt-12 bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <div class="bg-gray-900 px-4 py-2.5 flex items-center justify-between">
-                <h2 class="text-white font-bold text-sm tracking-wider uppercase">SULAWESI TENGGARA</h2>
-                <a href="{{ route('sultra') }}" class="text-xs text-red-400 font-semibold hover:text-red-300">Semua &rarr;</a>
-            </div>
-            <div class="p-4">
-                <div class="flex flex-wrap gap-2">
-                    @foreach($regions->take(12) as $region)
-                        <a href="{{ url('/sultra/'.$region->slug) }}" class="px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-sm font-semibold rounded-full transition-colors">{{ $region->name }}</a>
-                    @endforeach
-                </div>
-            </div>
         </div>
     </div>
 </x-layouts.app>

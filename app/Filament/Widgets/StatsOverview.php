@@ -5,7 +5,6 @@ namespace App\Filament\Widgets;
 use App\Models\Article;
 use App\Models\Comment;
 use App\Models\Media;
-use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 

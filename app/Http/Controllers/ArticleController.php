@@ -29,6 +29,7 @@ class ArticleController extends Controller
         return view('articles.show', [
             'article' => $article->load(['category', 'region', 'author', 'tags']),
             'related' => $related,
+            'comments' => $article->comments()->latest()->limit(50)->get(),
         ]);
     }
 }

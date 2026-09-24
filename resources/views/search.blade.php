@@ -12,11 +12,11 @@
             <p class="text-sm text-gray-600 mb-4">Ditemukan <span class="font-bold">{{ $articles->total() }}</span> berita untuk "<span class="font-bold">{{ $query }}</span>"</p>
         @endif
 
-        <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @forelse($articles as $article)
                 <x-news-card :article="$article" textSize="text-lg" excerpt="true" />
             @empty
-                <div class="bg-white p-10 text-center text-gray-500 rounded-lg border border-gray-200">
+                <div class="bg-white md:col-span-2 p-10 text-center text-gray-500 rounded-lg border border-gray-200">
                     Tidak ada berita yang ditemukan.
                 </div>
             @endforelse

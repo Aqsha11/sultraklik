@@ -7,19 +7,19 @@ use App\Models\Headline;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Pages\Concerns\InteractsWithFormActions;
+use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 
 class ManageHeadlines extends Page implements HasForms
 {
-    use InteractsWithForms, InteractsWithFormActions;
+    use InteractsWithFormActions, InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
 
@@ -37,7 +37,7 @@ class ManageHeadlines extends Page implements HasForms
     {
         $headlines = Headline::active()->orderBy('position')->get();
 
-        $items = collect(range(1, 5))->map(function (int $position) use ($headlines) {
+        $items = collect(range(1, 6))->map(function (int $position) use ($headlines) {
             $headline = $headlines->firstWhere('position', $position);
 
             return [
@@ -54,7 +54,7 @@ class ManageHeadlines extends Page implements HasForms
         return $form
             ->schema([
                 Section::make('Susunan Headline')
-                    ->description('Posisi 1 = Headline Utama. Posisi 2-5 = Headline Pendamping. Simpan untuk menerapkan.')
+                    ->description('Posisi 1 = Headline Utama. Posisi 2-6 = Headline Pendamping. Simpan untuk menerapkan.')
                     ->icon('heroicon-o-star')
                     ->schema([
                         Repeater::make('items')
@@ -69,6 +69,7 @@ class ManageHeadlines extends Page implements HasForms
                                             3 => '3 - Pendamping',
                                             4 => '4 - Pendamping',
                                             5 => '5 - Pendamping',
+                                            6 => '6 - Pendamping',
                                         ])
                                         ->required(),
                                     Select::make('article_id')
@@ -88,8 +89,8 @@ class ManageHeadlines extends Page implements HasForms
                                 ]),
                             ])
                             ->columns(1)
-                            ->defaultItems(5)
-                            ->maxItems(5)
+                            ->defaultItems(6)
+                            ->maxItems(6)
                             ->addable(false)
                             ->reorderable(true)
                             ->deletable(false),
@@ -106,26 +107,28 @@ class ManageHeadlines extends Page implements HasForms
             return;
         }
 
-        Headline::query()->where('is_active', true)->update(['is_active' => false]);
+        $items = collect($data['items'] ?? [])
+            ->reject(fn ($item) => empty($item['article_id']))
+            ->values();
 
-        foreach (($data['items'] ?? []) as $item) {
-            if (empty($item['article_id'])) {
-                continue;
-            }
+        Headline::query()->delete();
 
-            Headline::updateOrCreate(
-                [
-                    'position' => $item['position'],
-                    'is_active' => true,
-                ],
-                [
-                    'article_id' => $item['article_id'],
-                    'is_active' => true,
-                ]
-            );
+        foreach ($items as $item) {
+            Headline::create([
+                'position' => $item['position'],
+                'article_id' => $item['article_id'],
+                'is_active' => true,
+            ]);
 
-            Article::query()->whereKey($item['article_id'])->update(['is_headline' => true]);
+            Article::query()->whereKey($item['article_id'])->update([
+                'is_headline' => true,
+                'is_featured' => false,
+            ]);
         }
+
+        Article::where('is_headline', true)
+            ->whereNotIn('id', $items->pluck('article_id'))
+            ->update(['is_headline' => false]);
 
         Notification::make()
             ->title('Headline berhasil diperbarui')

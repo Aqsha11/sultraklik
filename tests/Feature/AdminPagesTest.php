@@ -9,6 +9,7 @@ use Tests\TestCase;
 class AdminPagesTest extends TestCase
 {
     use RefreshDatabase;
+
     public function test_admin_pages_render_for_authenticated_user(): void
     {
         $admin = User::where('email', 'admin@sultraklik.com')->first()

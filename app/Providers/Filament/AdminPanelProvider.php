@@ -4,6 +4,8 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\ManageHeadlines;
 use App\Filament\Pages\SettingsPage;
+use App\Models\Setting;
+use App\Support\ColorPalette;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -32,8 +34,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('SULTRAKLIK')
             ->colors(function (): array {
                 try {
-                    $primary = \App\Support\ColorPalette::shades(
-                        (string) \App\Models\Setting::get('theme.primary_color', '#dc2626')
+                    $primary = ColorPalette::shades(
+                        (string) Setting::get('theme.primary_color', '#dc2626')
                     );
                 } catch (\Throwable) {
                     $primary = Color::hex('#dc2626');

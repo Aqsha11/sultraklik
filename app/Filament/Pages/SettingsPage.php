@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -12,13 +13,13 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Pages\Concerns\InteractsWithFormActions;
+use Filament\Pages\Page;
 use Filament\Support\Exceptions\Halt;
 
 class SettingsPage extends Page implements HasForms
 {
-    use InteractsWithForms, InteractsWithFormActions;
+    use InteractsWithFormActions, InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
@@ -49,6 +50,9 @@ class SettingsPage extends Page implements HasForms
             'youtube' => Setting::get('social.youtube', ''),
             'primary_color' => Setting::get('theme.primary_color', '#dc2626'),
             'accent_color' => Setting::get('theme.accent_color', '#dc2626'),
+            'logo' => Setting::get('theme.logo', ''),
+            'favicon' => Setting::get('theme.favicon', ''),
+            'share_image' => Setting::get('theme.share_image', ''),
         ]);
     }
 
@@ -75,6 +79,40 @@ class SettingsPage extends Page implements HasForms
                         TextInput::make('facebook'),
                         TextInput::make('twitter')->label('X (Twitter)'),
                         TextInput::make('youtube'),
+                    ]),
+                Section::make('Logo & Favicon')
+                    ->icon('heroicon-o-photo')
+                    ->description('Logo tampil di header & footer website; favicon adalah ikon kecil di tab browser.')
+                    ->columns(2)
+                    ->schema([
+                        FileUpload::make('logo')
+                            ->label('Logo Website')
+                            ->image()
+                            ->disk('public')
+                            ->directory('uploads/settings')
+                            ->visibility('public')
+                            ->imageResizeMode('contain')
+                            ->imageResizeTargetWidth(400)
+                            ->maxSize(2048)
+                            ->helperText('PNG/JPG/WebP transparan, maks 2 MB.'),
+                        FileUpload::make('favicon')
+                            ->label('Favicon')
+                            ->image()
+                            ->disk('public')
+                            ->directory('uploads/settings')
+                            ->visibility('public')
+                            ->acceptedFileTypes(['image/png', 'image/x-icon', 'image/svg+xml'])
+                            ->maxSize(512)
+                            ->helperText('PNG/ICO/SVG. Ukuran kecil (32x32 px) paling ideal.'),
+                        FileUpload::make('share_image')
+                            ->label('Gambar Default Saat Dibagikan (OG Image)')
+                            ->image()
+                            ->disk('public')
+                            ->directory('uploads/settings')
+                            ->visibility('public')
+                            ->maxSize(2048)
+                            ->helperText('Thumbnail saat link dibagikan ke WhatsApp/Facebook/X. Ideal 1200x630 px. Dipakai untuk semua halaman yang tak punya gambar berita.')
+                            ->columnSpanFull(),
                     ]),
                 Section::make('Tampilan')
                     ->icon('heroicon-o-swatch')
@@ -104,7 +142,7 @@ class SettingsPage extends Page implements HasForms
         foreach ($data as $key => $value) {
             $group = match ($key) {
                 'instagram', 'facebook', 'twitter', 'youtube' => 'social',
-                'primary_color', 'accent_color' => 'theme',
+                'primary_color', 'accent_color', 'logo', 'favicon', 'share_image' => 'theme',
                 default => 'general',
             };
             $value = $value ?? '';

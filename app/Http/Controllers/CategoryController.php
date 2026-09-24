@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Article;
 use App\Models\Category;
 use App\Models\Region;
 use App\Models\Tag;
@@ -18,11 +19,11 @@ class CategoryController extends Controller
             return $this->sultra();
         }
 
-        $articles = \App\Models\Article::published()
+        $articles = Article::published()
             ->where('category_id', $category->id)
             ->with(['category', 'region'])
             ->orderByDesc('published_at')
-            ->paginate(15);
+            ->paginate(26);
 
         return view('categories.show', [
             'title' => $category->name,
@@ -33,11 +34,11 @@ class CategoryController extends Controller
 
     public function sultra(): View
     {
-        $articles = \App\Models\Article::published()
+        $articles = Article::published()
             ->whereNotNull('region_id')
             ->with(['category', 'region'])
             ->orderByDesc('published_at')
-            ->paginate(15);
+            ->paginate(26);
 
         return view('categories.show', [
             'title' => 'Sulawesi Tenggara',
@@ -48,11 +49,11 @@ class CategoryController extends Controller
 
     public function byRegion(Region $region): View
     {
-        $articles = \App\Models\Article::published()
+        $articles = Article::published()
             ->where('region_id', $region->id)
             ->with(['category', 'region'])
             ->orderByDesc('published_at')
-            ->paginate(15);
+            ->paginate(26);
 
         return view('categories.show', [
             'title' => $region->name,
@@ -67,7 +68,7 @@ class CategoryController extends Controller
             ->published()
             ->with(['category', 'region'])
             ->orderByDesc('published_at')
-            ->paginate(15);
+            ->paginate(26);
 
         return view('categories.show', [
             'title' => '#'.$tag->name,

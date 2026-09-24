@@ -33,13 +33,8 @@ class AdvertisementResource extends Resource
     protected static ?int $navigationSort = 2;
 
     public const POSITIONS = [
-        'homepage_top' => 'Homepage Top Banner (970x90)',
-        'homepage_middle' => 'Homepage Middle Banner',
+        'homepage_top' => 'Banner di Bawah Headline (970x90)',
         'sidebar' => 'Sidebar',
-        'article_top' => 'Article Top',
-        'article_middle' => 'Article Middle',
-        'article_bottom' => 'Article Bottom',
-        'mobile' => 'Mobile Banner',
     ];
 
     public static function form(Form $form): Form
@@ -91,7 +86,8 @@ class AdvertisementResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 ImageColumn::make('image')
-                    ->disk('public')
+                    ->label('Gambar')
+                    ->getStateUsing(fn (Advertisement $record): ?string => $record->image_url)
                     ->width(120)
                     ->height(40),
                 TextColumn::make('title')

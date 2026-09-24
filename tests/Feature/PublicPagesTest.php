@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Comment;
 use App\Models\Region;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +17,7 @@ class PublicPagesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\DatabaseSeeder::class);
+        $this->seed(DatabaseSeeder::class);
     }
 
     public function test_public_pages_render(): void
@@ -38,5 +40,50 @@ class PublicPagesTest extends TestCase
         if ($tag !== null) {
             $this->get('/tag/'.$tag->slug)->assertOk();
         }
+    }
+
+    public function test_visitor_can_submit_comment(): void
+    {
+        $article = Article::published()->firstOrFail();
+
+        $this->from('/'.$article->slug)
+            ->post('/komentar/'.$article->slug, [
+                'name' => 'Pengunjung',
+                'email' => 'pengunjung@example.com',
+                'body' => 'Berita yang bagus sekali.',
+            ])
+            ->assertRedirect('/'.$article->slug)
+            ->assertSessionHas('comment_status');
+
+        $this->assertDatabaseHas('comments', [
+            'article_id' => $article->id,
+            'name' => 'Pengunjung',
+            'body' => 'Berita yang bagus sekali.',
+            'is_approved' => false,
+        ]);
+
+        $this->assertTrue(Comment::where('is_approved', false)->count() >= 1);
+
+        $this->get('/'.$article->slug)
+            ->assertOk()
+            ->assertSee('Kirim Komentar');
+    }
+
+    public function test_visitor_can_like_article(): void
+    {
+        $article = Article::published()->firstOrFail();
+        $before = $article->likes_count;
+
+        $this->post('/artikel/'.$article->slug.'/like', [], ['X-Requested-With' => 'XMLHttpRequest'])
+            ->assertOk()
+            ->assertJson(['liked' => true, 'likes' => $before + 1]);
+
+        $this->assertDatabaseHas('article_likes', [
+            'article_id' => $article->id,
+        ]);
+
+        $this->post('/artikel/'.$article->slug.'/like', [], ['X-Requested-With' => 'XMLHttpRequest'])
+            ->assertOk()
+            ->assertJson(['liked' => false, 'likes' => $before]);
     }
 }

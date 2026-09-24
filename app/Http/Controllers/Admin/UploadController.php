@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class UploadController extends Controller
 {
-    public function image(Request $request): \Illuminate\Http\JsonResponse
+    public function image(Request $request): JsonResponse
     {
         $request->validate([
             'upload' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',

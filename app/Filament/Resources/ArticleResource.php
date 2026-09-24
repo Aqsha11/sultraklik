@@ -15,6 +15,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
@@ -164,10 +165,12 @@ class ArticleResource extends Resource
                                     ->columns(2),
                                 Toggle::make('is_headline')
                                     ->label('Headline')
-                                    ->helperText('Jadikan berita ini headline (posisi dikelola di menu Headline).'),
+                                    ->helperText('Jadikan berita ini headline (posisi dikelola di menu Headline). Berita headline tidak bisa jadi berita pilihan (tidak boleh duplikat).')
+                                    ->live(),
                                 Toggle::make('is_featured')
                                     ->label('Berita Pilihan')
-                                    ->helperText('Ditandai sebagai berita unggulan.'),
+                                    ->helperText('Ditandai sebagai berita unggulan. Berita headline tidak bisa jadi pilihan (tidak boleh duplikat).')
+                                    ->disabled(fn (Get $get) => (bool) $get('is_headline')),
                             ]),
                         ]),
                     Section::make('SEO')

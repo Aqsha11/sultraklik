@@ -14,8 +14,11 @@ class Article extends Model
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_REVIEW = 'review';
+
     public const STATUS_PUBLISHED = 'published';
+
     public const STATUS_ARCHIVED = 'archived';
 
     protected $fillable = [
@@ -24,7 +27,7 @@ class Article extends Model
         'featured_image', 'image_caption', 'image_credit',
         'status', 'published_at',
         'is_headline', 'is_featured',
-        'views', 'comments_count',
+        'views', 'comments_count', 'likes_count',
         'seo_title', 'seo_description', 'og_image',
     ];
 
@@ -39,6 +42,15 @@ class Article extends Model
         static::saving(function (Article $article) {
             if (empty($article->slug) && $article->title) {
                 $article->slug = Str::slug($article->title);
+            }
+
+            if ($article->is_featured) {
+                $isHeadline = $article->is_headline
+                    || Headline::query()->where('article_id', $article->id)->exists();
+
+                if ($isHeadline) {
+                    $article->is_featured = false;
+                }
             }
         });
     }
@@ -66,6 +78,11 @@ class Article extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class)->where('is_approved', true);
+    }
+
+    public function likes(): HasMany
+    {
+        return $this->hasMany(Like::class);
     }
 
     public function scopePublished($query)

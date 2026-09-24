@@ -6,16 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Comment extends Model
+class Like extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'article_id', 'user_id', 'name', 'email', 'body', 'is_approved', 'parent_id',
-    ];
+    protected $table = 'article_likes';
 
-    protected $casts = [
-        'is_approved' => 'boolean',
+    protected $fillable = [
+        'article_id', 'user_id', 'ip_address',
     ];
 
     public function article(): BelongsTo
@@ -26,10 +24,5 @@ class Comment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(Comment::class, 'parent_id');
     }
 }

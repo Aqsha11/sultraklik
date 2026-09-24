@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\Page;
 use Illuminate\Http\Response;
 
 class SiteMapController extends Controller
@@ -10,7 +11,7 @@ class SiteMapController extends Controller
     public function index(): Response
     {
         $articles = Article::published()->orderByDesc('published_at')->get(['slug', 'updated_at', 'published_at', 'title']);
-        $pages = \App\Models\Page::where('is_active', true)->get(['slug', 'updated_at']);
+        $pages = Page::where('is_active', true)->get(['slug', 'updated_at']);
 
         $content = view('seo.sitemap', compact('articles', 'pages'))->render();
 
