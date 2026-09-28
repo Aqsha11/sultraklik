@@ -456,6 +456,8 @@
                         Caps Lock sedang aktif. Nonaktifkan agar password tersimpan dengan benar.
                     </div>
 
+                    <x-turnstile action="login" livewire="turnstileToken" />
+
                     <x-filament-panels::form.actions
                         :actions="$this->getCachedFormActions()"
                         :full-width="$this->hasFullWidthFormActions()"

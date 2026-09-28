@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Support\Turnstile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -32,6 +33,13 @@ class CommentController extends Controller
                 'comment_error',
                 'Terlalu banyak komentar dikirim dari perangkat ini. Silakan coba lagi nanti.'
             );
+        }
+
+        // Cloudflare Turnstile. Bot yang lolos honeypot masih tertangkap di sini.
+        // Pesan errornya sengaja disamakan dengan pesan sukses, supaya bot
+        // tidak belajar bahwa ini filter.
+        if (! Turnstile::verify($request, Turnstile::ACTION_COMMENT)) {
+            return back()->with('comment_status', 'Komentar berhasil dikirim dan akan tampil setelah disetujui redaksi.');
         }
 
         // Anti-bot: honeypot teks harus kosong & form minimal ~3 detik sejak dimuat.

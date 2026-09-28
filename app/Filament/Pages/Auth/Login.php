@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Auth;
 
 use App\Models\Setting;
+use App\Support\Turnstile;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Component;
@@ -11,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Auth\Login as BaseLogin;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 
 class Login extends BaseLogin
 {
@@ -24,15 +26,43 @@ class Login extends BaseLogin
 
     protected static string $view = 'filament.pages.auth.login';
 
+    /**
+     * Token Cloudflare Turnstile, diisi dari widget lewat komponen blade
+     * <x-turnstile livewire="turnstileToken" />. Kosong saat captcha nonaktif.
+     */
+    public ?string $turnstileToken = null;
+
     public function authenticate(): ?LoginResponse
     {
+        // Captcha dicek paling awal: bot tidak pernah sampai ke percobaan
+        // password, jadi tidak ikut menghabiskan kuota rate limit akun.
+        //
+        // Token diambil dari $this->turnstileToken, bukan dari body request:
+        // form login milik Livewire, dan widget menulis token ke state
+        // Livewire lewat $wire.set().
+        if (! Turnstile::verify(request(), Turnstile::ACTION_LOGIN, $this->turnstileToken)) {
+            $this->notifyCaptchaFailed();
+
+            return null;
+        }
+
         if ($this->isAccountThrottled()) {
             $this->notifyThrottled();
 
             return null;
         }
 
-        $response = parent::authenticate();
+        try {
+            $response = parent::authenticate();
+        } catch (ValidationException $e) {
+            // Token Turnstile sudah dipakai oleh verifikasi di atas, jadi tidak
+            // bisa dipakai ulang. Tanpa reset di sini, satu saja ketikan salah
+            // akan membuat admin terkunci selamanya karena widget masih
+            // menampilkan "sukses" dan tidak menghasilkan token baru.
+            $this->invalidateCaptcha();
+
+            throw $e;
+        }
 
         if (Filament::auth()->check()) {
             $this->clearAccountLimiters();
@@ -128,6 +158,32 @@ class Login extends BaseLogin
             ->danger()
             ->persistent()
             ->send();
+    }
+
+    private function notifyCaptchaFailed(): void
+    {
+        $this->invalidateCaptcha();
+
+        Notification::make()
+            ->title('Verifikasi keamanan gagal')
+            ->body('Captcha belum tercentang atau sudah kedaluwarsa. Silakan coba lagi.')
+            ->danger()
+            ->persistent()
+            ->send();
+    }
+
+    /**
+     * Buang token yang sudah dipakai dan surat widget merender ulang.
+     */
+    private function invalidateCaptcha(): void
+    {
+        if (! Turnstile::enabled()) {
+            return;
+        }
+
+        $this->turnstileToken = null;
+
+        $this->dispatch('sl-turnstile-failed');
     }
 
     private function clearAccountLimiters(): void

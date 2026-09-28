@@ -144,6 +144,11 @@
                         </div>
                         <textarea name="body" rows="4" placeholder="Tulis komentar Anda..." required
                             class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-accent-500">{{ old('body') }}</textarea>
+
+                        {{-- Token dikirim widget sebagai input cf-turnstile-response,
+                             jadi tidak perlu field manual di sini. --}}
+                        <x-turnstile action="comment" />
+
                         <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold px-4 py-2.5 rounded-md transition-colors">
                             <i class="fa-solid fa-paper-plane mr-1.5"></i>Kirim Komentar
                         </button>

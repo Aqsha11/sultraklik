@@ -14,8 +14,12 @@ return [
 
         // 'unsafe-inline' + 'unsafe-eval' wajib: Tailwind CDN memakai eval,
         // Alpine dan Filament menyuntik <script> inline.
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://challenges.cloudflare.com",
 
+        // Cloudflare Turnstile: widget dimuat dari challenges.cloudflare.com
+        // dan menampilkan challenge lewat iframe dari host yang sama, jadi
+        // host ini wajib ada di script-src, connect-src, dan frame-src.
+        //
         // Bunny Fonts adalah font provider default Filament (HasFont::$fontProvider),
         // jadi host stylesheet-nya wajib ada di style-src - hanya font-src tidak cukup.
         "style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.bunny.net",
@@ -25,9 +29,9 @@ return [
         // Artikel boleh memakai foto dari luar (featured_image/OG image bisa URL eksternal).
         "img-src 'self' data: blob: https: http:",
 
-        "connect-src 'self'",
+        "connect-src 'self' https://challenges.cloudflare.com",
 
-        "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com",
+        "frame-src 'self' https://challenges.cloudflare.com https://www.youtube-nocookie.com https://www.youtube.com",
 
         "object-src 'none'",
 

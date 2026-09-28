@@ -8,18 +8,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-/**
- * Membuat satu-satunya akun super admin.
- *
- * Keamanan:
- * - Tidak ada password default. Dulu seeder ini membuat tiga akun demo
- *   (admin/editor/reporter) semuanya dengan password 'password', yang berarti
- *   ada akun dengan password sama sekali bukan rahasia begitu situs tayang.
- * - Password dibaca dari env SUPER_ADMIN_PASSWORD. Kalau kosong di production
- *   seeder berhenti, bukan membuat password lemah.
- * - Kalau akun sudah ada, password TIDAK disentuh, supaya `db:seed` ulang
- *   tidak menimpa password yang sudah diganti pemilik akun.
- */
 class UserSeeder extends Seeder
 {
     public function run(): void
