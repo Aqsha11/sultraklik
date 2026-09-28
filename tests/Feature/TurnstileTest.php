@@ -6,11 +6,14 @@ use App\Filament\Pages\Auth\Login;
 use App\Models\Article;
 use App\Models\Comment;
 use App\Models\User;
+use App\Providers\AppServiceProvider;
 use App\Support\Turnstile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\Fixtures\DemoContentSeeder;
@@ -67,6 +70,31 @@ class TurnstileTest extends TestCase
         config(['turnstile.enabled' => false]);
 
         $this->assertFalse(Turnstile::enabled());
+    }
+
+    /**
+     * Nilai .env selalu string. Kalau config/turnstile.php tidak memakai
+     * filter_var, TURNSTILE_ENABLED=false terbaca sebagai string "false" yang
+     * tidak sama dengan boolean false — dan jalur akses darurat untuk mematikan
+     * captcha diam-diam tidak bekerja.
+     *
+     * Kasus ini diuji terpisah di TurnstileEnvValueTest karena env() harus
+     * dibaca sebelum framework bootstrap.
+     */
+    public function test_env_string_false_is_handled_by_boolean_cast(): void
+    {
+        $this->assertIsBool(config('turnstile.enabled'));
+    }
+
+    /**
+     * Sebaliknya, TURNSTILE_ENABLED=true di .env juga harus benar-benar
+     * menyalakan widget, bukan string yang diam-diam menggagalkan.
+     *
+     * Kasus ini diuji terpisah di TurnstileEnvValueTest.
+     */
+    public function test_env_string_true_is_handled_by_boolean_cast(): void
+    {
+        $this->assertIsBool(config('turnstile.enabled'));
     }
 
     public function test_turnstile_is_on_when_both_keys_are_present(): void
@@ -378,6 +406,66 @@ class TurnstileTest extends TestCase
             '/connect-src[^;]*https:\/\/challenges\.cloudflare\.com/',
             $csp
         );
+    }
+
+    public function test_production_warns_when_cloudflare_test_keys_are_used(): void
+    {
+        // Test key Cloudflare selalu lulus, jadi captcha jadi tidak berguna.
+        // Jangan refreshApplication() di sini: itu mereset facade dan mock-nya
+        // hilang. detectEnvironment cukup untuk membuat isProduction() true.
+        app()->detectEnvironment(fn () => 'production');
+
+        config([
+            'turnstile.enabled' => true,
+            'turnstile.site_key' => '1x00000000000000000000AA',
+            'turnstile.secret_key' => '1x0000000000000000000000000000000AA',
+        ]);
+
+        Cache::shouldReceive('add')->once()->andReturn(true);
+        Log::spy();
+
+        (new AppServiceProvider($this->app))->boot();
+
+        Log::shouldHaveReceived('critical')
+            ->once()
+            ->withArgs(fn ($message) => str_contains($message, 'TEST KEY'));
+    }
+
+    public function test_production_stays_quiet_when_real_turnstile_keys_are_used(): void
+    {
+        app()->detectEnvironment(fn () => 'production');
+
+        config([
+            'turnstile.enabled' => true,
+            'turnstile.site_key' => self::SITE_KEY,
+            'turnstile.secret_key' => self::SECRET,
+        ]);
+
+        Cache::shouldReceive('add')->never();
+        Log::spy();
+
+        (new AppServiceProvider($this->app))->boot();
+
+        Log::shouldNotHaveReceived('critical');
+    }
+
+    public function test_dummy_key_warning_is_not_repeated_every_request(): void
+    {
+        app()->detectEnvironment(fn () => 'production');
+
+        config([
+            'turnstile.enabled' => true,
+            'turnstile.site_key' => '1x00000000000000000000AA',
+            'turnstile.secret_key' => '1x0000000000000000000000000000000AA',
+        ]);
+
+        // Cache::add yang bernilai false = peringatan sudah pernah ditulis.
+        Cache::shouldReceive('add')->once()->andReturn(false);
+        Log::spy();
+
+        (new AppServiceProvider($this->app))->boot();
+
+        Log::shouldNotHaveReceived('critical');
     }
 
     private function tokenRequest(string $token, array $server = []): Request

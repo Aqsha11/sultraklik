@@ -26,7 +26,13 @@
 
 return [
 
-    'enabled' => env('TURNSTILE_ENABLED', true),
+    /*
+    | WAJIB lewat filter_var: nilai .env selalu string, jadi
+    | TURNSTILE_ENABLED=false akan terbaca sebagai string "false" yang tidak
+    | sama dengan boolean false. Tanpa filter_var, jalur akses darurat untuk
+    | mematikan captcha justru tidak bekerja.
+    */
+    'enabled' => filter_var(env('TURNSTILE_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
 
     'site_key' => env('TURNSTILE_SITE_KEY'),
 

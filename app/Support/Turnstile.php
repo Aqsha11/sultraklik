@@ -34,7 +34,10 @@ final class Turnstile
      */
     public static function enabled(): bool
     {
-        if (config('turnstile.enabled') === false) {
+        // Pakai loose check, bukan === false: config/turnstile.php sudah
+        // memfilter nilai .env jadi boolean, tapi loosely-typed check di sini
+        // tetap aman kalau config di-override manual (mis. lewat test).
+        if (! config('turnstile.enabled')) {
             return false;
         }
 

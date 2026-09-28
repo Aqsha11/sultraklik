@@ -32,5 +32,14 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!--
+            PENTING: nilai di sini menggantikan .env developer saat test jalan.
+            Tanpa ini, suite akan ikut mengaktifkan Cloudflare Turnstile dan
+            TrustProxies begitu key diisi di .env lokal, dan hasilnya berbeda
+            antar mesin. Test yang butuh captcha menyalakannya sendiri lewat
+            config() di dalam test.
+        -->
+        <env name="TURNSTILE_ENABLED" value="false" force="true"/>
+        <env name="TRUSTED_PROXIES" value="" force="true"/>
     </php>
 </phpunit>
