@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Filament\Resources\AdvertisementResource\Pages;
 use App\Models\Advertisement;
 use Filament\Forms\Components\DateTimePicker;
@@ -22,6 +23,8 @@ use Filament\Tables\Table;
 
 class AdvertisementResource extends Resource
 {
+    use RestrictsAccessByRole;
+
     protected static ?string $model = Advertisement::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
@@ -44,13 +47,16 @@ class AdvertisementResource extends Resource
                 TextInput::make('title')
                     ->label('Judul')
                     ->required()
+                    ->placeholder('Nama iklan/klien...')
                     ->maxLength(255),
                 Select::make('position')
                     ->label('Posisi')
+                    ->placeholder('Pilih posisi...')
                     ->options(self::POSITIONS)
                     ->required(),
                 Select::make('type')
                     ->label('Tipe')
+                    ->placeholder('Pilih tipe...')
                     ->options([
                         'image' => 'Gambar',
                         'code' => 'Kode (HTML/JS)',
@@ -61,19 +67,24 @@ class AdvertisementResource extends Resource
                 FileUpload::make('image')
                     ->label('Banner')
                     ->image()
+                    ->disk('public')
                     ->directory('ads')
                     ->visible(fn (Get $get) => $get('type') === 'image'),
                 Textarea::make('code')
                     ->label('Kode Iklan')
+                    ->placeholder('Tempel kode HTML/JS iklan di sini...')
                     ->rows(4)
                     ->visible(fn (Get $get) => $get('type') === 'code'),
                 TextInput::make('url')
                     ->label('URL Tujuan')
+                    ->placeholder('https://...')
                     ->url(),
                 DateTimePicker::make('starts_at')
-                    ->label('Mulai Tampil'),
+                    ->label('Mulai Tampil')
+                    ->placeholder('Pilih tanggal & jam'),
                 DateTimePicker::make('ends_at')
-                    ->label('Selesai Tampil'),
+                    ->label('Selesai Tampil')
+                    ->placeholder('Pilih tanggal & jam'),
                 Toggle::make('is_active')
                     ->label('Aktif')
                     ->default(true),
@@ -87,7 +98,7 @@ class AdvertisementResource extends Resource
             ->columns([
                 ImageColumn::make('image')
                     ->label('Gambar')
-                    ->getStateUsing(fn (Advertisement $record): ?string => $record->image_url)
+                    ->disk('public')
                     ->width(120)
                     ->height(40),
                 TextColumn::make('title')

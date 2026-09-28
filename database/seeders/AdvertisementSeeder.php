@@ -3,24 +3,31 @@
 namespace Database\Seeders;
 
 use App\Models\Advertisement;
+use Database\Seeders\Concerns\GeneratesPlaceholderImages;
 use Illuminate\Database\Seeder;
 
 class AdvertisementSeeder extends Seeder
 {
+    use GeneratesPlaceholderImages;
+
     public function run(): void
     {
         $ads = [
-            ['Banner Header 970x90', 'homepage_top', 'https://placehold.co/970x90/DC2626/ffffff?text=SULTRAKLIK+%7C+Header'],
-            ['Banner Sidebar Vertikal 300x600', 'sidebar', 'https://placehold.co/300x600/F59E0B/ffffff?text=IKLAN+SIDEBAR'],
-            ['Banner Sidebar Vertikal 300x600 - 2', 'sidebar', 'https://placehold.co/300x600/0EA5E9/ffffff?text=IKLAN+SIDEBAR+2'],
+            ['Banner Header 970x90', 'homepage_top', 970, 90],
+            ['Banner Sidebar Vertikal 300x600', 'sidebar', 300, 600],
+            ['Banner Sidebar Vertikal 300x600 - 2', 'sidebar', 300, 600],
         ];
 
         Advertisement::whereNotIn('position', ['homepage_top', 'sidebar'])->delete();
 
-        foreach ($ads as [$title, $position, $image]) {
+        foreach ($ads as [$title, $position, $width, $height]) {
             Advertisement::updateOrCreate(
                 ['position' => $position, 'title' => $title],
-                ['type' => 'image', 'image' => $image, 'is_active' => true]
+                [
+                    'type' => 'image',
+                    'image' => $this->placeholderImage($title, 'IKLAN', $width, $height, 'ads'),
+                    'is_active' => true,
+                ]
             );
         }
 

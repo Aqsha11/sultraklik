@@ -41,7 +41,13 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+
+            // Root-relative, bukan env('APP_URL').'/storage'. Kalau APP_URL tidak
+            // sama persis dengan origin yang dipakai browser (port dev, Valet,
+            // IP lokal), hasil Storage::url() jadi cross-origin dan diblokir
+            // connect-src 'self' - preview gambar FileUpload di panel Filament
+            // gagal dimuat. Path relatif selalu same-origin.
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

@@ -30,6 +30,15 @@ class HomeController extends Controller
             ->unique()
             ->all();
 
+        $videos = Article::published()
+            ->with(['category', 'region', 'author'])
+            ->whereNotNull('video_url')
+            ->whereNotIn('id', $usedIds)
+            ->orderByDesc('published_at')
+            ->limit(4)
+            ->get();
+        $usedIds = array_merge($usedIds, $videos->pluck('id')->all());
+
         $latest = Article::published()
             ->with(['category', 'region', 'author'])
             ->whereNotIn('id', $usedIds)
@@ -75,11 +84,12 @@ class HomeController extends Controller
             ->get();
         $wilayahArticles = $this->fillSection($wilayahBase, 10, $usedIds);
 
-        $breakingNews = BreakingNews::live()->first();
+        $breakingNews = BreakingNews::live()->get();
 
         return view('home', compact(
             'headlineMain',
             'headlineOthers',
+            'videos',
             'latest',
             'popular',
             'picked',

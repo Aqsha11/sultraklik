@@ -16,8 +16,8 @@ Route::get('/sitemap', [SiteMapController::class, 'index']);
 Route::get('/sitemap.xml', [SiteMapController::class, 'index']);
 Route::get('/rss.xml', [SiteMapController::class, 'rss']);
 Route::get('/search', [SearchController::class, 'index']);
-Route::get('/search/live', [SearchController::class, 'live']);
-Route::get('/home/load-more', [HomeController::class, 'loadMore']);
+Route::middleware('throttle:30,1')->get('/search/live', [SearchController::class, 'live']);
+Route::middleware('throttle:60,1')->get('/home/load-more', [HomeController::class, 'loadMore']);
 
 Route::get('/category/{category:slug}', [CategoryController::class, 'show'])->name('category.show');
 Route::get('/kategori/{category:slug}', [CategoryController::class, 'show']);
@@ -27,9 +27,9 @@ Route::get('/page/{page:slug}', [PageController::class, 'show'])->name('page.sho
 Route::get('/sultra', [CategoryController::class, 'sultra'])->name('sultra');
 Route::get('/sultra/{region:slug}', [CategoryController::class, 'byRegion'])->name('region.show');
 
-Route::middleware('auth')->post('/upload-image', [UploadController::class, 'image']);
+Route::middleware(['auth', 'throttle:30,1'])->post('/upload-image', [UploadController::class, 'image']);
 
-Route::post('/komentar/{article:slug}', [CommentController::class, 'store'])->name('comment.store');
-Route::post('/artikel/{article:slug}/like', [LikeController::class, 'toggle'])->name('like.toggle');
+Route::middleware('throttle:10,1')->post('/komentar/{article:slug}', [CommentController::class, 'store'])->name('comment.store');
+Route::middleware('throttle:30,1')->post('/artikel/{article:slug}/like', [LikeController::class, 'toggle'])->name('like.toggle');
 
 Route::get('/{article:slug}', [ArticleController::class, 'show'])->name('article.show');

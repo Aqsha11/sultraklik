@@ -2,7 +2,7 @@
     <div class="max-w-7xl mx-auto px-4 py-6">
         <div class="flex items-center justify-between mb-6">
             <h1 class="font-serif-news font-black text-2xl md:text-3xl uppercase flex items-center gap-3">
-                <span class="inline-block w-1.5 h-8 bg-red-600"></span>
+                <span class="inline-block w-1.5 h-8 bg-accent-600"></span>
                 {{ $title }}
             </h1>
             @if(request('q'))
@@ -14,7 +14,7 @@
             <div class="flex flex-wrap gap-2 mb-6">
                 @foreach($regions as $region)
                     <a href="{{ url('/sultra/'.$region->slug) }}"
-                       class="px-3 py-1.5 {{ request()->is('sultra/'.$region->slug) ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-red-50 hover:text-red-700' }} text-sm font-semibold border border-gray-200 rounded-full transition-colors">
+                       class="px-3 py-1.5 {{ request()->is('sultra/'.$region->slug) ? 'bg-accent-600 text-white' : 'bg-white text-gray-700 hover:bg-accent-50 hover:text-accent-700' }} text-sm font-semibold border border-gray-200 rounded-full transition-colors">
                         {{ $region->name }}
                     </a>
                 @endforeach
@@ -23,7 +23,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4">
                     @forelse($articles as $article)
                         <x-news-card :article="$article" textSize="text-lg" excerpt="true" />
                     @empty

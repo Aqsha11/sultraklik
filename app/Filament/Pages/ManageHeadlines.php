@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Models\Article;
 use App\Models\Headline;
 use Filament\Actions\Action;
@@ -20,6 +21,7 @@ use Filament\Support\Exceptions\Halt;
 class ManageHeadlines extends Page implements HasForms
 {
     use InteractsWithFormActions, InteractsWithForms;
+    use RestrictsAccessByRole;
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
 
@@ -63,6 +65,7 @@ class ManageHeadlines extends Page implements HasForms
                                 Grid::make(2)->schema([
                                     Select::make('position')
                                         ->label('Posisi')
+                                        ->placeholder('Pilih posisi...')
                                         ->options([
                                             1 => '1 - Headline Utama',
                                             2 => '2 - Pendamping',
@@ -74,6 +77,7 @@ class ManageHeadlines extends Page implements HasForms
                                         ->required(),
                                     Select::make('article_id')
                                         ->label('Berita')
+                                        ->placeholder('Pilih berita...')
                                         ->options(fn (): array => Article::query()
                                             ->published()
                                             ->orderByDesc('published_at')

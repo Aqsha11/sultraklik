@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
 use Filament\Forms\Components\ColorPicker;
@@ -21,6 +22,8 @@ use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
 {
+    use RestrictsAccessByRole;
+
     protected static ?string $model = Category::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
@@ -38,24 +41,30 @@ class CategoryResource extends Resource
                 TextInput::make('name')
                     ->label('Nama Kategori')
                     ->required()
+                    ->placeholder('contoh: Politik')
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                 TextInput::make('slug')
                     ->required()
+                    ->placeholder('contoh: politik')
                     ->unique(ignoreRecord: true),
                 Textarea::make('description')
+                    ->placeholder('Tulis deskripsi kategori...')
                     ->rows(2)
                     ->columnSpanFull(),
                 Select::make('parent_id')
                     ->label('Sub dari Kategori')
+                    ->placeholder('Pilih kategori induk (opsional)...')
                     ->relationship('parent', 'name')
                     ->preload()
                     ->allowHtml(),
                 ColorPicker::make('color')
                     ->label('Warna Badge')
+                    ->placeholder('#e11d48')
                     ->default('#e11d48'),
                 TextInput::make('order_column')
                     ->label('Urutan')
+                    ->placeholder('0')
                     ->numeric()
                     ->default(0),
                 Toggle::make('is_active')

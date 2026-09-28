@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Filament\Resources\RegionResource\Pages;
 use App\Models\Region;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +18,8 @@ use Illuminate\Support\Str;
 
 class RegionResource extends Resource
 {
+    use RestrictsAccessByRole;
+
     protected static ?string $model = Region::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
@@ -34,13 +37,16 @@ class RegionResource extends Resource
                 TextInput::make('name')
                     ->label('Nama Wilayah')
                     ->required()
+                    ->placeholder('contoh: Kendari')
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                 TextInput::make('slug')
                     ->required()
+                    ->placeholder('contoh: kendari')
                     ->unique(ignoreRecord: true),
                 TextInput::make('order_column')
                     ->label('Urutan')
+                    ->placeholder('0')
                     ->numeric()
                     ->default(0),
                 Toggle::make('is_active')

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms\Components\Select;
@@ -15,6 +16,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
+    use RestrictsAccessByRole;
+
+    protected static function requiredRoleCheck(): string
+    {
+        return 'isSuperAdmin';
+    }
+
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -32,13 +40,16 @@ class UserResource extends Resource
                 TextInput::make('name')
                     ->label('Nama')
                     ->required()
+                    ->placeholder('Nama lengkap pengguna...')
                     ->maxLength(255),
                 TextInput::make('email')
                     ->email()
                     ->required()
+                    ->placeholder('nama@contoh.com')
                     ->unique(ignoreRecord: true),
                 Select::make('role')
                     ->label('Peran')
+                    ->placeholder('Pilih peran...')
                     ->options([
                         User::ROLE_SUPER_ADMIN => 'Super Admin',
                         User::ROLE_ADMIN => 'Admin',
@@ -47,13 +58,21 @@ class UserResource extends Resource
                     ])
                     ->required()
                     ->default(User::ROLE_REPORTER)
+                    ->disabled(fn (): bool => $form->getRecord()?->id === auth()->id())
+                    ->helperText('Peran akun sendiri tidak dapat diubah dari sini.')
                     ->native(false),
                 TextInput::make('password')
                     ->label('Password')
                     ->password()
+                    ->placeholder('Kosongkan jika tidak diubah')
                     ->revealable()
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $operation) => $operation === 'create')
+                    // Sama dengan aturan UserSeeder di produksi. Field ini
+                    // nullable saat edit, jadi minLength hanya jalan kalau
+                    // memang ada password baru yang dikirim.
+                    ->minLength(12)
+                    ->helperText('Minimal 12 karakter.')
                     ->maxLength(255),
             ]);
     }

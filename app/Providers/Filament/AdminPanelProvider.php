@@ -2,7 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\ManageHeadlines;
+use App\Filament\Pages\Profile;
 use App\Filament\Pages\SettingsPage;
 use App\Models\Setting;
 use App\Support\ColorPalette;
@@ -10,16 +12,19 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\UserMenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -30,8 +35,16 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->brandName('SULTRAKLIK')
+            ->brandLogo(function (): Htmlable {
+                try {
+                    return new HtmlString(view('filament.components.brand-logo')->render());
+                } catch (\Throwable) {
+                    return new HtmlString('<span class="text-xl font-bold">SULTRAKLIK</span>');
+                }
+            })
+            ->brandLogoHeight('2.5rem')
             ->colors(function (): array {
                 try {
                     $primary = ColorPalette::shades(
@@ -53,6 +66,13 @@ class AdminPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
                 SettingsPage::class,
                 ManageHeadlines::class,
+                Profile::class,
+            ])
+            ->userMenuItems([
+                UserMenuItem::make()
+                    ->label('Profil Saya')
+                    ->url(fn (): string => Profile::getUrl())
+                    ->icon('heroicon-o-user-circle'),
             ])
             ->widgets([
                 Widgets\AccountWidget::class,

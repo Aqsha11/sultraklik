@@ -16,6 +16,11 @@ class LatestArticles extends BaseWidget
 
     protected static ?string $heading = 'Berita Terbaru';
 
+    public static function canView(): bool
+    {
+        return (bool) auth()->user()?->isEditor();
+    }
+
     public function table(Table $table): Table
     {
         return $table

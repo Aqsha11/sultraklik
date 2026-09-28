@@ -12,6 +12,13 @@ class StatsOverview extends BaseWidget
 {
     protected static ?int $sort = 1;
 
+    protected static string $view = 'filament.widgets.stats-overview';
+
+    public static function canView(): bool
+    {
+        return (bool) auth()->user()?->isEditor();
+    }
+
     protected function getStats(): array
     {
         return [

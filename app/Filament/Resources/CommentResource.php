@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Filament\Resources\CommentResource\Pages;
 use App\Models\Comment;
 use Filament\Forms\Components\Textarea;
@@ -17,6 +18,8 @@ use Filament\Tables\Table;
 
 class CommentResource extends Resource
 {
+    use RestrictsAccessByRole;
+
     protected static ?string $model = Comment::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
@@ -40,6 +43,7 @@ class CommentResource extends Resource
                 Textarea::make('body')
                     ->label('Komentar')
                     ->required()
+                    ->placeholder('Tulis/ubah isi komentar...')
                     ->columnSpanFull(),
                 Toggle::make('is_approved')
                     ->label('Disetujui'),

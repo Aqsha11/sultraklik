@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\HtmlSanitizer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,10 @@ class Page extends Model
         static::saving(function (Page $page) {
             if (empty($page->slug) && $page->title) {
                 $page->slug = Str::slug($page->title);
+            }
+
+            if ($page->content !== null) {
+                $page->content = HtmlSanitizer::clean($page->content);
             }
         });
     }

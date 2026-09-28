@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Filament\Resources\TagResource\Pages;
 use App\Models\Tag;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +16,8 @@ use Illuminate\Support\Str;
 
 class TagResource extends Resource
 {
+    use RestrictsAccessByRole;
+
     protected static ?string $model = Tag::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
@@ -32,10 +35,12 @@ class TagResource extends Resource
                 TextInput::make('name')
                     ->label('Nama Tag')
                     ->required()
+                    ->placeholder('contoh: Pilkada')
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                 TextInput::make('slug')
                     ->required()
+                    ->placeholder('contoh: pilkada')
                     ->unique(ignoreRecord: true),
             ]);
     }

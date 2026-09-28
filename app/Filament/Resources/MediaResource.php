@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Filament\Resources\MediaResource\Pages;
 use App\Models\Media;
 use Filament\Forms\Components\FileUpload;
@@ -16,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class MediaResource extends Resource
 {
+    use RestrictsAccessByRole;
+
     protected static ?string $model = Media::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
@@ -34,6 +37,7 @@ class MediaResource extends Resource
                     ->label('File')
                     ->image()
                     ->imageEditor()
+                    ->disk('public')
                     ->directory('media')
                     ->maxSize(10240)
                     ->required()
@@ -46,13 +50,17 @@ class MediaResource extends Resource
                     }),
                 TextInput::make('filename')
                     ->label('Nama File')
-                    ->required(),
+                    ->required()
+                    ->placeholder('Nama file media...'),
                 TextInput::make('alt')
-                    ->label('Teks Alt'),
+                    ->label('Teks Alt')
+                    ->placeholder('Deskripsi gambar untuk aksesibilitas & SEO...'),
                 TextInput::make('caption')
-                    ->label('Caption'),
+                    ->label('Caption')
+                    ->placeholder('Keterangan singkat gambar...'),
                 TextInput::make('credit')
-                    ->label('Kredit'),
+                    ->label('Kredit')
+                    ->placeholder('Nama fotografer / sumber gambar...'),
             ]);
     }
 

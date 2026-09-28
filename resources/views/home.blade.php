@@ -1,4 +1,4 @@
-<x-layouts.app title="Beranda">
+<x-layouts.app :breaking-news="$breakingNews">
     <div class="max-w-7xl mx-auto px-4 py-6">
 
         {{-- HEADLINE UTAMA + PENDAMPING --}}
@@ -15,28 +15,42 @@
                     <div class="p-5">
                         <div class="flex items-center gap-2 mb-2">
                             @if($headlineMain->article->region)
-                                <a href="{{ url('/sultra/'.$headlineMain->article->region->slug) }}" class="text-xs font-bold text-red-600 uppercase">{{ $headlineMain->article->region->name }}</a>
+                                <a href="{{ url('/sultra/'.$headlineMain->article->region->slug) }}" class="text-xs font-bold text-accent-600 uppercase">{{ $headlineMain->article->region->name }}</a>
                             @else
-                                <a href="{{ url('/kategori/'.$headlineMain->article->category->slug) }}" class="text-xs font-bold text-red-600 uppercase">{{ $headlineMain->article->category->name }}</a>
+                                <a href="{{ url('/kategori/'.$headlineMain->article->category->slug) }}" class="text-xs font-bold text-accent-600 uppercase">{{ $headlineMain->article->category->name }}</a>
                             @endif
                         </div>
                         <a href="{{ url($headlineMain->article->slug) }}">
-                            <h1 class="font-serif-news font-black text-2xl md:text-3xl lg:text-4xl leading-tight group-hover:text-red-700 transition-colors">{{ $headlineMain->article->title }}</h1>
+                            <h1 class="font-serif-news font-black text-2xl md:text-3xl lg:text-4xl leading-tight group-hover:text-accent-700 transition-colors">{{ $headlineMain->article->title }}</h1>
                         </a>
                         <p class="text-sm text-gray-500 mt-3">{{ $headlineMain->article->published_at->diffForHumans() }} &bull; {{ $headlineMain->article->views }} views</p>
                         <x-card-actions :article="$headlineMain->article" />
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-4 lg:h-full lg:overflow-y-auto lg:pr-1">
-                    @foreach($headlineOthers as $article)
-                        <x-news-card :article="$article" showImage="true" textSize="text-sm" />
-                    @endforeach
+                <div x-data class="relative flex flex-col gap-4 lg:h-full">
+                    @if($headlineOthers->count())
+                        <div class="flex lg:flex-col gap-4 overflow-x-auto lg:overflow-y-auto lg:overflow-x-hidden snap-x snap-mandatory lg:snap-none pb-2 lg:pb-0 lg:pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth lg:h-full" x-ref="headlineTrack">
+                            @foreach($headlineOthers as $article)
+                                <div class="min-w-[260px] md:min-w-[300px] lg:min-w-0 flex-shrink-0 snap-start lg:snap-none">
+                                    <x-news-card :article="$article" showImage="true" textSize="text-sm" />
+                                </div>
+                            @endforeach
+                        </div>
+                        <button type="button" @click="$refs.headlineTrack.scrollBy({ left: -300, behavior: 'smooth' })" title="Geser ke kiri" aria-label="Geser ke kiri"
+                            class="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-accent-600 hover:text-white transition-colors -ml-4 border border-gray-100 lg:hidden">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button type="button" @click="$refs.headlineTrack.scrollBy({ left: 300, behavior: 'smooth' })" title="Geser ke kanan" aria-label="Geser ke kanan"
+                            class="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-accent-600 hover:text-white transition-colors -mr-4 border border-gray-100 lg:hidden">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    @endif
                 </div>
             </div>
         @endif
 
-        <div class="mb-10">
+        <div class="mb-10 hidden lg:block">
             <x-ad-slot position="homepage_top" height="h-16" imgHeight="h-16" />
         </div>
 
@@ -46,15 +60,15 @@
                 <div x-data="homeLoadMore('latest', @json($pageUsedIds))">
                     <div class="flex items-center justify-between mb-5 border-b-2 border-gray-200">
                         <h2 class="relative pb-2 font-black text-base md:text-lg tracking-widest uppercase text-gray-900">
-                            <span class="absolute bottom-[-2px] left-0 h-[3px] w-14 bg-red-600"></span>
+                            <span class="absolute bottom-[-2px] left-0 h-[3px] w-14 bg-accent-600"></span>
                             Berita Terbaru
                         </h2>
-                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-500 hover:text-white hover:bg-red-600 hover:border-red-600 transition-colors" x-data="{ live: false }" @click="live = !live" title="Segarkan" aria-label="Segarkan">
+                        <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 text-gray-500 hover:text-white hover:bg-accent-600 hover:border-accent-600 transition-colors" x-data="{ live: false }" @click="live = !live" title="Segarkan" aria-label="Segarkan">
                             <i x-show="live" class="fa-solid fa-rotate animate-spin"></i>
                             <i x-show="!live" class="fa-solid fa-rotate-right"></i>
                         </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-ref="grid">
+                    <div class="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4" x-ref="grid">
                         @forelse($latest as $article)
                             <x-news-card :article="$article" showImage="true" textSize="text-lg" />
                         @empty
@@ -64,7 +78,7 @@
                     @if($latest->count())
                         <button type="button" x-show="hasMore" @click="load()" :disabled="loading" title="Muat Lebih Banyak" aria-label="Muat Lebih Banyak"
                             class="mt-6 w-full flex items-center justify-center">
-                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border-2 border-gray-300 bg-white text-gray-500 hover:text-red-600 hover:border-red-600 transition-colors disabled:opacity-60">
+                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border-2 border-gray-300 bg-white text-gray-500 hover:text-accent-600 hover:border-accent-600 transition-colors disabled:opacity-60">
                                 <i x-show="!loading" class="fa-solid fa-chevron-down"></i>
                                 <i x-show="loading" class="fa-solid fa-spinner fa-spin"></i>
                             </span>
@@ -74,8 +88,8 @@
 
                 {{-- TRENDING --}}
                 @if($popular->count())
-                    <div>
-                        <x-section-heading title="TRENDING" />
+                    <div class="bg-black rounded-lg p-5">
+                        <x-section-heading title="TRENDING" dark />
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             @foreach($popular->take(3) as $i => $article)
                                 <x-news-card-link :article="$article">
@@ -87,8 +101,8 @@
                                         @endif
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
                                             <span class="text-white font-black text-xl leading-none mb-1">{{ '#'.($i + 1) }}</span>
-                                            <h5 class="text-white font-bold text-sm leading-snug line-clamp-2 transition-colors group-hover:text-red-400">{{ $article->title }}</h5>
-                                            <p class="text-xs text-gray-300 mt-1.5">{{ $article->region?->name ?? $article->category?->name }} &bull; <i class="fa-solid fa-fire text-red-400"></i> {{ number_format($article->views) }} dibaca</p>
+                                            <h5 class="text-white font-bold text-sm leading-snug line-clamp-2 transition-colors group-hover:text-accent-400">{{ $article->title }}</h5>
+                                            <p class="text-xs text-gray-300 mt-1.5">{{ $article->region?->name ?? $article->category?->name }} &bull; <i class="fa-solid fa-fire text-accent-400"></i> {{ number_format($article->views) }} dibaca</p>
                                         </div>
                                     </article>
                                 </x-news-card-link>
@@ -112,7 +126,7 @@
                                                 <div class="w-full aspect-[4/3] bg-gray-800 flex items-center justify-center text-gray-500 font-black text-lg">SULTRAKLIK</div>
                                             @endif
                                             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-4">
-                                                <h5 class="text-white font-bold text-sm leading-snug line-clamp-2 transition-colors group-hover:text-red-400">{{ $article->title }}</h5>
+                                                <h5 class="text-white font-bold text-sm leading-snug line-clamp-2 transition-colors group-hover:text-accent-400">{{ $article->title }}</h5>
                                                 <p class="text-xs text-gray-300 mt-1.5">{{ $article->region?->name ?? $article->category?->name }} &bull; {{ $article->published_at->diffForHumans() }}</p>
                                             </div>
                                         </article>
@@ -121,11 +135,11 @@
                             </div>
 
                             <button type="button" @click="$refs.pickedTrack.scrollBy({ left: -320, behavior: 'smooth' })"
-                                class="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-red-600 hover:text-white transition-colors -ml-4 border border-gray-100">
+                                class="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-accent-600 hover:text-white transition-colors -ml-4 border border-gray-100">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </button>
                             <button type="button" @click="$refs.pickedTrack.scrollBy({ left: 320, behavior: 'smooth' })"
-                                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-red-600 hover:text-white transition-colors -mr-4 border border-gray-100">
+                                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-accent-600 hover:text-white transition-colors -mr-4 border border-gray-100">
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                         </div>
@@ -136,14 +150,14 @@
                 @if($recommended->count())
                     <div x-data="homeLoadMore('recommend', @json($pageUsedIds))">
                         <x-section-heading title="Rekomendasi Untuk Anda" />
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-ref="grid">
+                        <div class="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4" x-ref="grid">
                             @foreach($recommended as $article)
                                 <x-news-card :article="$article" textSize="text-lg" />
                             @endforeach
                         </div>
                         <button type="button" x-show="hasMore" @click="load()" :disabled="loading" title="Muat Lebih Banyak" aria-label="Muat Lebih Banyak"
                             class="mt-6 w-full flex items-center justify-center">
-                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border-2 border-gray-300 bg-white text-gray-500 hover:text-red-600 hover:border-red-600 transition-colors disabled:opacity-60">
+                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full border-2 border-gray-300 bg-white text-gray-500 hover:text-accent-600 hover:border-accent-600 transition-colors disabled:opacity-60">
                                 <i x-show="!loading" class="fa-solid fa-chevron-down"></i>
                                 <i x-show="loading" class="fa-solid fa-spinner fa-spin"></i>
                             </span>
@@ -151,11 +165,52 @@
                     </div>
                 @endif
 
+                {{-- VIDEO --}}
+                @if($videos->count())
+                    <div x-data>
+                        <x-section-heading title="Video" />
+                        <div class="relative group/scroll">
+                            <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth" x-ref="videoTrack">
+                                @foreach($videos as $article)
+                                    <article class="relative overflow-hidden min-w-[260px] md:min-w-[300px] flex-shrink-0 snap-start bg-gray-800 group"
+                                        x-data="{ playing: false, pinned: false }"
+                                        @mouseenter="if (! pinned) playing = true"
+                                        @mouseleave="if (! pinned) playing = false">
+                                        <img src="{{ $article->video_thumbnail_url }}" alt="Thumbnail video: {{ $article->title }}" loading="lazy" x-show="! playing" class="w-full aspect-[16/9] object-cover transition-transform duration-300 group-hover:scale-105">
+                                        <template x-if="playing">
+                                            <div class="relative aspect-[16/9] bg-black">
+                                                <iframe :src="'{{ $article->video_embed_url }}?autoplay=1&playsinline=1&mute=' + (pinned ? 0 : 1)" title="Video: {{ $article->title }}" class="absolute inset-0 h-full w-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                                            </div>
+                                        </template>
+                                        <a href="{{ url($article->slug) }}" class="absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+                                            <h5 class="text-white font-bold text-sm leading-snug line-clamp-2 transition-colors group-hover:text-accent-400">{{ $article->title }}</h5>
+                                            <p class="text-xs text-gray-300 mt-1.5">{{ $article->region?->name ?? $article->category?->name }} &bull; {{ $article->published_at->diffForHumans() }}</p>
+                                        </a>
+                                        <span x-show="! playing" class="pointer-events-none absolute top-2 left-2 rounded bg-black/70 px-2 py-0.5 text-[11px] font-bold uppercase text-white">Video</span>
+                                        <button type="button" x-show="! playing" @click.stop="pinned = true; playing = true" class="absolute inset-0 m-auto h-12 w-12 rounded-full bg-red-600 text-white shadow-lg flex items-center justify-center transition hover:scale-110 hover:bg-red-700" aria-label="Putar video bersuara: {{ $article->title }}">
+                                            <i class="fa-solid fa-play ml-0.5 text-lg"></i>
+                                        </button>
+                                    </article>
+                                @endforeach
+                            </div>
+
+                            <button type="button" @click="$refs.videoTrack.scrollBy({ left: -320, behavior: 'smooth' })"
+                                class="absolute left-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-accent-600 hover:text-white transition-colors -ml-4 border border-gray-100">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button type="button" @click="$refs.videoTrack.scrollBy({ left: 320, behavior: 'smooth' })"
+                                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 text-gray-700 hover:bg-accent-600 hover:text-white transition-colors -mr-4 border border-gray-100">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- WILAYAH SULTRA --}}
                 @if($wilayahArticles->count())
                     <div>
                         <x-section-heading title="Wilayah Sultra" />
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4">
                             @foreach($wilayahArticles as $article)
                                 <x-news-card :article="$article" textSize="text-lg" />
                             @endforeach
@@ -164,7 +219,7 @@
                 @endif
             </div>
 
-            <aside class="space-y-6">
+            <aside class="space-y-6 lg:sticky lg:top-40 lg:self-start">
                 <x-sidebar-ads position="sidebar" />
             </aside>
         </div>

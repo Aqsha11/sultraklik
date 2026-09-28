@@ -12,7 +12,7 @@
             <p class="text-sm text-gray-600 mb-4">Ditemukan <span class="font-bold">{{ $articles->total() }}</span> berita untuk "<span class="font-bold">{{ $query }}</span>"</p>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4">
             @forelse($articles as $article)
                 <x-news-card :article="$article" textSize="text-lg" excerpt="true" />
             @empty

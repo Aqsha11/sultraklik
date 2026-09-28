@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Filament\Resources\BreakingNewsResource\Pages;
 use App\Models\BreakingNews;
 use Filament\Forms\Components\DateTimePicker;
@@ -16,6 +17,8 @@ use Filament\Tables\Table;
 
 class BreakingNewsResource extends Resource
 {
+    use RestrictsAccessByRole;
+
     protected static ?string $model = BreakingNews::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
@@ -33,15 +36,21 @@ class BreakingNewsResource extends Resource
                 TextInput::make('title')
                     ->label('Judul')
                     ->required()
+                    ->placeholder('Tulis teks breaking news di sini...')
                     ->maxLength(255),
                 TextInput::make('url')
                     ->label('URL (opsional)')
+                    ->placeholder('https://... (link tujuan)')
                     ->helperText('Link tujuan jika breaking news diklik.'),
                 DateTimePicker::make('starts_at')
                     ->label('Mulai')
+                    ->placeholder('Pilih tanggal & jam')
+                    ->helperText('Kosongkan agar langsung tayang.')
                     ->default(now()),
                 DateTimePicker::make('ends_at')
-                    ->label('Berakhir'),
+                    ->label('Berakhir')
+                    ->placeholder('Pilih tanggal & jam')
+                    ->helperText('Kosongkan agar tidak pernah kedaluwarsa. Baris dengan waktu awal/akhir yang terlewat akan disembunyikan dari ticker.'),
                 Toggle::make('is_active')
                     ->label('Aktif')
                     ->default(true),

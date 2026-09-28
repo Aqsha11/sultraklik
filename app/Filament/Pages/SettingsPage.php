@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\RestrictsAccessByRole;
 use App\Models\Setting;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
@@ -19,6 +20,13 @@ use Filament\Support\Exceptions\Halt;
 
 class SettingsPage extends Page implements HasForms
 {
+    use RestrictsAccessByRole;
+
+    protected static function requiredRoleCheck(): string
+    {
+        return 'isAdmin';
+    }
+
     use InteractsWithFormActions, InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
@@ -48,6 +56,10 @@ class SettingsPage extends Page implements HasForms
             'facebook' => Setting::get('social.facebook', ''),
             'twitter' => Setting::get('social.twitter', ''),
             'youtube' => Setting::get('social.youtube', ''),
+            'tiktok' => Setting::get('social.tiktok', ''),
+            'meta_title' => Setting::get('seo.meta_title', ''),
+            'meta_description' => Setting::get('seo.meta_description', ''),
+            'meta_keywords' => Setting::get('seo.meta_keywords', ''),
             'primary_color' => Setting::get('theme.primary_color', '#dc2626'),
             'accent_color' => Setting::get('theme.accent_color', '#dc2626'),
             'logo' => Setting::get('theme.logo', ''),
@@ -64,21 +76,47 @@ class SettingsPage extends Page implements HasForms
                     ->icon('heroicon-o-information-circle')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('name')->label('Nama Website')->required(),
-                        TextInput::make('tagline')->label('Tagline')->required(),
-                        Textarea::make('description')->label('Deskripsi')->columnSpanFull(),
-                        TextInput::make('email')->label('Email'),
-                        TextInput::make('phone')->label('Telepon/WhatsApp'),
-                        Textarea::make('address')->label('Alamat Redaksi')->columnSpanFull(),
+                        TextInput::make('name')->label('Nama Website')->required()->placeholder('contoh: SULTRAKLIK'),
+                        TextInput::make('tagline')->label('Tagline')->required()->placeholder('contoh: Portal Berita Sulawesi Tenggara'),
+                        Textarea::make('description')->label('Deskripsi')->placeholder('Deskripsi singkat tentang portal Anda...')->columnSpanFull(),
+                        TextInput::make('email')->label('Email')->placeholder('redaksi@contoh.com'),
+                        TextInput::make('phone')->label('Telepon/WhatsApp')->placeholder('contoh: 0812-3456-7890'),
+                        Textarea::make('address')->label('Alamat Redaksi')->placeholder('Alamat lengkap kantor redaksi...')->columnSpanFull(),
+                    ]),
+                Section::make('SEO')
+                    ->icon('heroicon-o-magnifying-glass')
+                    ->description('Nilai default untuk halaman yang tidak punya meta sendiri (beranda, kategori, wilayah, tag, pencarian). Kosongkan meta title/description untuk memakai Nama Website, Tagline, dan Deskripsi Umum.')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('meta_title')
+                            ->label('Meta Title')
+                            ->maxLength(70)
+                            ->placeholder('contoh: SULTRAKLIK — Portal Berita Sulawesi Tenggara')
+                            ->helperText('Ideal 50-60 karakter. Dipakai sebagai <title> beranda.')
+                            ->columnSpanFull(),
+                        Textarea::make('meta_description')
+                            ->label('Meta Description')
+                            ->maxLength(180)
+                            ->rows(3)
+                            ->placeholder('contoh: Berita terbaru dan paling更新日 dari Sulawesi Tenggara...')
+                            ->helperText('Ideal 150-160 karakter. Google memakainya sebagai deskripsi di hasil pencarian.')
+                            ->columnSpanFull(),
+                        Textarea::make('meta_keywords')
+                            ->label('Meta Keywords')
+                            ->rows(2)
+                            ->placeholder('berita sultra, sulawesi tenggara, kabar kendari')
+                            ->helperText('Pisahkan dengan koma. Diabaikan Google, masih dipakai sebagian mesin pencari lain.')
+                            ->columnSpanFull(),
                     ]),
                 Section::make('Media Sosial')
                     ->icon('heroicon-o-share')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('instagram'),
-                        TextInput::make('facebook'),
-                        TextInput::make('twitter')->label('X (Twitter)'),
-                        TextInput::make('youtube'),
+                        TextInput::make('instagram')->placeholder('https://instagram.com/username'),
+                        TextInput::make('facebook')->placeholder('https://facebook.com/username'),
+                        TextInput::make('twitter')->label('X (Twitter)')->placeholder('https://x.com/username'),
+                        TextInput::make('youtube')->placeholder('https://youtube.com/@channel'),
+                        TextInput::make('tiktok')->placeholder('https://tiktok.com/@username'),
                     ]),
                 Section::make('Logo & Favicon')
                     ->icon('heroicon-o-photo')
@@ -141,7 +179,8 @@ class SettingsPage extends Page implements HasForms
 
         foreach ($data as $key => $value) {
             $group = match ($key) {
-                'instagram', 'facebook', 'twitter', 'youtube' => 'social',
+                'instagram', 'facebook', 'twitter', 'youtube', 'tiktok' => 'social',
+                'meta_title', 'meta_description', 'meta_keywords' => 'seo',
                 'primary_color', 'accent_color', 'logo', 'favicon', 'share_image' => 'theme',
                 default => 'general',
             };
