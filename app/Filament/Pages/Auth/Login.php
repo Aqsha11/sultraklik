@@ -107,7 +107,7 @@ class Login extends BaseLogin
     {
         return parent::getEmailFormComponent()
             ->label('Alamat Email')
-            ->placeholder('admin@sultraklik.id')
+            ->placeholder('Masukkan alamat email Anda')
             ->prefixIcon('heroicon-m-envelope', isInline: true);
     }
 
