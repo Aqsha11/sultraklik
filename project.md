@@ -74,11 +74,11 @@ Ini kita tetapkan seperti yang kamu inginkan sebelumnya: slug berita langsung di
 
 Misalnya domain:
 
-https://sultraklik.com
+https://sultraklik.id
 
 Artikel:
 
-https://sultraklik.com/27-siswa-sma-negeri-konawe-diduga-keracunan-usai-santap-mbg-di-sekolah/
+https://sultraklik.id/27-siswa-sma-negeri-konawe-diduga-keracunan-usai-santap-mbg-di-sekolah/
 
 Tidak menggunakan:
 
@@ -207,7 +207,7 @@ Artikel yang sedang menjadi headline tidak ditampilkan lagi pada bagian Berita T
 
 URL:
 
-https://sultraklik.com/judul-berita/
+https://sultraklik.id/judul-berita/
 
 Tampilannya:
 
@@ -283,7 +283,7 @@ archived
 
 URL:
 
-https://sultraklik.com/admin
+https://sultraklik.id/admin
 
 Dashboard:
 

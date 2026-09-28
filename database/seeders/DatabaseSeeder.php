@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
             'general.name' => 'SULTRAKLIK',
             'general.tagline' => 'Portal Berita Sulawesi Tenggara',
             'general.description' => 'Portal berita digital yang menyajikan informasi seputar Sulawesi Tenggara secara cepat, informatif, dan mudah diakses.',
-            'general.email' => 'redaksi@sultraklik.com',
+            'general.email' => 'redaksi@sultraklik.id',
             'general.phone' => '+62 852 0000 0000',
             'general.address' => 'Kendari, Sulawesi Tenggara',
             'social.instagram' => 'https://instagram.com/sultraklik',
